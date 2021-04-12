@@ -17,7 +17,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % VARIABLE DECLERATION
 Xp = 8;    Yp = 8;      Tp = 10;
-nx = 9;    ny = 9;        nt = 11;
+nx = 9;    ny = 9;        nt = 9;
 dx = Xp/(nx-1);    dy = Yp/(ny - 1);        dt = Tp/(nt-1); 
 P = zeros(nx,ny); 
 b = zeros(nx,ny);
@@ -32,7 +32,7 @@ for k = 1:nt
     vn = v;
     for i=2:nx-1
         for j = 2:ny-1
-            b(i,j) = (-rho.*(((un(i+1,j) - un(i-1,j)) / (2*dx))^2) + (((un(i+1,j) - un(i-1,j)) / (2*dx)) * ((vn(i,j+1) - vn(i,j+1)) / (2*dy))) +  ((vn(i,j+1) - vn(i,j+1)) / (2*dy)) + (rho * (((un(i+1,j) - un(i-1,j)) / (2*dx)) + ((vn(i,j+1) - vn(i,j+1)) / (2*dy)))/dt));                    
+            b(i,j) = (-rho.*(((un(i+1,j) - un(i-1,j)) / (2*dx))^2) + (((un(i+1,j) - un(i-1,j)) / (2*dx)) * ((vn(i,j+1) - vn(i,j-1)) / (2*dy))) +  (((vn(i,j+1) - vn(i,j-1)) / (2*dy))^2) + (rho * (((un(i+1,j) - un(i-1,j)) / (2*dx)) + ((vn(i,j+1) - vn(i,j-1)) / (2*dy)))/dt));                    
         end
     end
     %    FIND THE CORRECTED PRESSURE TERMS
@@ -40,7 +40,7 @@ for k = 1:nt
         Pd = P;
         for i=2:nx-1
             for j=2:ny-1
-                P(i,j) = (((dy^2).*(P(i-1,j) + P(i+1,j))) +  ((dx^2).*(P(i,j-1) + P(i,j+1))) - (b(i,j) * (dx^2) * (dy^2))) / (2.*((dx^2) + (dy^2)))
+                P(i,j) = (((dy^2).*(P(i+1,j) + P(i-1,j))) +  ((dx^2).*(P(i,j+1) + P(i,j-1))) - (b(i,j) * (dx^2) * (dy^2))) / (2.*((dx^2) + (dy^2)))
             end
         end
     end
@@ -51,8 +51,8 @@ for k = 1:nt
         un = u;     vn = v;
         for i = 2:nx - 1
             for j = 2:ny - 1
-                u(i,j) = un(i,j) + dt*((-un(i,j) * ((un(i,j) - un(i-1,j))/dx)) - (vn(i,j) * ((un(i,j) - un(i,j-1))/dy)) - ((1/rho) * (P(i-1,j) - P(i-1,j))/(2*dx)) + (vis * ((un(i-1,j) - (2*un(i,j))+ un(i+1,j))/(dx^2))) + (vis * ((un(i,j-1) - (2*un(i,j))+ un(i,j+1))/(dy^2))));
-                v(i,j) = vn(i,j) + dt*((-un(i,j) * ((vn(i,j) - vn(i-1,j))/dx)) - (vn(i,j) * ((vn(i,j) - vn(i,j-1))/dy)) - ((1/rho) * (P(i-1,j) - P(i-1,j))/(2*dx)) + (vis * ((vn(i-1,j) - (2*vn(i,j))+ vn(i+1,j))/(dx^2))) + (vis * ((vn(i,j-1) - (2*vn(i,j))+ vn(i,j+1))/(dy^2))));
+                u(i,j) = un(i,j) + dt*((-un(i,j) * ((un(i,j) - un(i-1,j))/dx)) - (vn(i,j) * ((un(i,j) - un(i,j-1))/dy)) - ((1/rho) * (P(i+1,j) - P(i-1,j))/(2*dx)) + (vis * ((un(i-1,j) - (2*un(i,j))+ un(i+1,j))/(dx^2))) + (vis * ((un(i,j-1) - (2*un(i,j))+ un(i,j+1))/(dy^2))));
+                v(i,j) = vn(i,j) + dt*((-un(i,j) * ((vn(i,j) - vn(i-1,j))/dx)) - (vn(i,j) * ((vn(i,j) - vn(i,j-1))/dy)) - ((1/rho) * (P(i+1,j) - P(i-1,j))/(2*dx)) + (vis * ((vn(i-1,j) - (2*vn(i,j))+ vn(i+1,j))/(dx^2))) + (vis * ((vn(i,j-1) - (2*vn(i,j))+ vn(i,j+1))/(dy^2))));
             end
         end
         u(:,1) = 0;     u(:,end) = 0;       u(end,:) = 1;       u(1,:) = 0;
